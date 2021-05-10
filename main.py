@@ -1,6 +1,9 @@
 from tkinter import *
 from tkinter import messagebox
 import platform
+from Database/config import config
+
+config.connector
 
 SYSTEM = platform.system()
 
