@@ -1,1 +1,4 @@
 mysql-connector
+psycopg2
+psycopg2-binary
+opencv-python
