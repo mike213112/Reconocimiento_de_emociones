@@ -9,7 +9,7 @@ CREATE TABLE FOTOS(
   nombre VARCHAR(50)
 );
 
-insert into FOTOS (nombre) values ('Ruth');
+insert into FOTOS (nombre) values ('Miguel');
 
 select * from FOTOS;
 
