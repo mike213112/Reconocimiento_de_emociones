@@ -1,10 +1,14 @@
 from tkinter import *
+from tkinter import messagebox
 from getpass import getuser
 import platform
 import cv2
 import os
 import imutils
 import numpy as np
+import time
+
+from numpy.lib.function_base import append
 
 
 # Constantes
@@ -152,41 +156,186 @@ def reconocimientoFacial():
 #Entrenando()
 #reconocimientoFacial()
 
+
+"""============================================================================================"""
+def CapturandoEmociones(name):
+    path = os.getcwd() + '/Fotos'
+
+    namepath = path + '/' + name
+
+    if not os.path.exists(namepath):
+        os.makedirs(namepath)
+
+    cap = cv2.VideoCapture(0)
+
+    faces = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    contador = 0
+
+    while True:
+        ret, frame = cap.read()
+        if ret == False:
+            break
+
+        frame = imutils.resize(frame, width=640)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        auxFrame = frame.copy()
+
+        face = faces.detectMultiScale(gray, 1.3, 5)
+
+        for (x, y, w, h) in face:
+            cv2.rectangle(frame, (x, y), (x + w, y + h + 40), (0, 255, 0), 2)
+            rostro = auxFrame[y:y + h, x:x + w]
+            rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
+            cv2.imwrite(namepath + '/{}_{}.png'.format(name, contador), rostro)
+            contador = contador + 1
+        cv2.imshow('frame', frame)
+
+        k = cv2.waitKey(1)
+        if k == 27 or contador >= 300:
+            break
+
+    cap.release() 
+    cv2.destroyAllWindows()
+
+
+def Entrenar():
+    def ObtenerElModelo(metodo, datosRostro, labels):
+        if metodo == 'EigenFaces': 
+            reconocer_emocion = cv2.face.EigenFaceRecognizer_create()
+        if metodo == 'FisherFaces': 
+            reconocer_emocion = cv2.face.FisherFaceRecognizer_create()
+        if metodo == 'LBPH': 
+            reconocer_emocion = cv2.face.LBPHFaceRecognizer_create()
+
+        messagebox.showinfo(title='Mensaje',message='Entregando ( {metodo}...)')
+        inicio = time.time()
+        reconocer_emocion.train(datosRostro, np.array(labels))
+        tiempo_de_entrenamiento = time.time()-inicio
+        messagebox.showinfo(title='Mensaje',message='Entregando ( {metodo}): {tiempo_de_entrenamiento}')
+    
+        reconocer_emocion.write('modelo' + metodo + '.xml')
+
+    datapath = os.getcwd() + '/Fotos'
+    listar_emociones = os.listdir(datapath)
+
+    labels = []
+    datosRostro = []
+    label = 0
+
+    for nombre_directorio in listar_emociones:
+        pathemociones = datapath + '/' + nombre_directorio
+
+        for nombre_archivo in os.listdir(pathemociones):
+
+            labels.append(label)
+            datosRostro.append(cv2.imread(pathemociones + '/' + nombre_archivo,0))
+
+        label = label + 1
+
+    ObtenerElModelo('EigenFaces',datosRostro,labels)
+    ObtenerElModelo('FisherFaces',datosRostro,labels)
+    ObtenerElModelo('LBPH',datosRostro,labels)
+
+
+def Reconocimiento_Emociones():
+    def imagenes(emocion):
+        if emotion == 'Felicidad': 
+            image = cv2.imread('Emojis/felicidad.jpeg')
+        if emotion == 'Enojo': 
+            image = cv2.imread('Emojis/enojo.jpeg')
+        if emotion == 'Sorpresa': 
+            image = cv2.imread('Emojis/sorpresa.jpeg')
+        if emotion == 'Tristeza': 
+            image = cv2.imread('Emojis/tristeza.jpeg')
+	return image
+
+    metodo = 'LBPH'
+
+    if metodo == 'EigenFaces': 
+        reconocer_emocion = cv2.face.EigenFaceRecognizer_create()
+    if metodo == 'FisherFaces': 
+        reconocer_emocion = cv2.face.FisherFaceRecognizer_create()
+    if metodo == 'LBPH': 
+        reconocer_emocion = cv2.face.LBPHFaceRecognizer_create()
+
+    reconocer_emocion.read('modelo' + metodo + '.xml')
+
+
+    rostro_clasificar = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
+
+    while True:
+        ret, frame = cap.read()
+        if ret == False:
+            break
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        auxFrame = gray.copy()
+
+        nFrame = cv2.hconcat([frame, np.zeros((480,300,3),dtype=np.uint8)])
+        rostros = rostro_clasificar.detectMultiScale(gray,1.3,5)
+
+        for (x,y,w,h) in rostros:
+            rostro = auxFrame[y:y+h,x:x+w]
+            rostro = cv2.resize(rostro,(150,150),interpolation=cv2.INTER_CUBIC)
+            rostro = reconocer_emocion.predict(rostro)
+
+            cv2.putText(frame,'{}'.format(result),(x,y-5),1,1.3,(255,255,0),1,cv2.LINE_AA)
+            
+            if metodo == 'LBPH':
+                if result[1] < 100:
+                    cv2.putText(frame,'{}'.format(imagePaths[result[0]]),(x,y-25),2,1.1,(0,255,0),1,cv2.LINE_AA)
+                    cv2.rectangle(frame, (x,y),(x+w,y+h),(0,255,0),2)
+                    image = emotionImage(imagePaths[result[0]])
+                    nFrame = cv2.hconcat([frame,image])
+                else:
+                    cv2.putText(frame,'No identificado',(x,y-20),2,0.8,(0,0,255),1,cv2.LINE_AA)
+                    cv2.rectangle(frame, (x,y),(x+w,y+h),(0,0,255),2)
+                    nFrame = cv2.hconcat([frame,np.zeros((480,300,3),dtype=np.uint8)])
+
+        cv2.imshow('nFrame',nFrame)
+        k = cv2.waitKey(1)
+        if k == 27:
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 """ Emociones """
 def Desprecio():
     nombre_de_la_emocion = 'desprecio'
-    facesuser(nombre_de_la_emocion)
-    Entrenando()
+    CapturandoEmociones(nombre_de_la_emocion)
+    Entrenar()
 
 
 def Tristeza():
     nombre_de_la_emocion = 'tristeza'
-    facesuser(nombre_de_la_emocion)
-    Entrenando()
+    CapturandoEmociones(nombre_de_la_emocion)
+    Entrenar()
 
 
 def Sorpresa():
     nombre_de_la_emocion = 'sorpresa'
-    facesuser(nombre_de_la_emocion)
-    Entrenando()
+    CapturandoEmociones(nombre_de_la_emocion)
+    Entrenar()
 
 
 def Miedo():
     nombre_de_la_emocion = 'miedo'
-    facesuser(nombre_de_la_emocion)
-    Entrenando()
+    CapturandoEmociones(nombre_de_la_emocion)
+    Entrenar()
 
 
 def Felicidad():
     nombre_de_la_emocion = 'felicidad'
-    facesuser(nombre_de_la_emocion)
-    Entrenando()
+    CapturandoEmociones(nombre_de_la_emocion)
+    Entrenar()
 
 
 def Enfado():
     nombre_de_la_emocion = 'enojo'
-    facesuser(nombre_de_la_emocion)
-    Entrenando()
+    CapturandoEmociones(nombre_de_la_emocion)
+    Entrenar()
 
 
 """ Funciones para la interfaz """
@@ -282,7 +431,7 @@ def InicioLinux():
     boton_entrenamiento = Button(inicio, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Entrenamiento)
     boton_entrenamiento.place(x=0, y=40)
 
-    boton_emocion = Button(inicio, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Emociones)
+    boton_emocion = Button(inicio, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Reconocimiento_Emociones)
     boton_emocion.place(x=330, y=40)
 
     """boton_mascara = Button(inicio, text='Mascarilla', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
@@ -300,10 +449,10 @@ def InicioWindows():
     inicio.title('Inicio de Sesion')
     inicio.attributes('-fullscreen', True)
 
-    boton_entrenamiento = Button(inicio, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
+    boton_entrenamiento = Button(inicio, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Entrenamiento)
     boton_entrenamiento.place(x=0, y=40)
 
-    boton_emocion = Button(inicio, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
+    boton_emocion = Button(inicio, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Reconocimiento_Emociones)
     boton_emocion.place(x=330, y=40)
 
     """boton_mascara = Button(inicio, text='Mascarilla', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)

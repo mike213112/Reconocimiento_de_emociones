@@ -14,5 +14,15 @@ if __name__ == "__main__":
         if not os.path.exists(namepath):
             os.makedirs(namepath)
             InicioLinux()
+        else:
+            InicioLinux()
     else:
-        InicioWindows()
+        path = os.getcwd()
+
+        namepath = path + '/Fotos'
+
+        if not os.path.exists(namepath):
+            os.makedirs(namepath)
+            InicioWindows()
+        else:
+            InicioWindows()
