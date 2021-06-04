@@ -207,11 +207,14 @@ def Entrenar():
         if metodo == 'LBPH': 
             reconocer_emocion = cv2.face.LBPHFaceRecognizer_create()
 
-        messagebox.showinfo(title='Mensaje',message='Entregando ( {metodo}...)')
+        #messagebox.showinfo(title='Mensaje',message='Entregando ( {metodo}...)')
+        print('Entregando ( metodo...)')
         inicio = time.time()
         reconocer_emocion.train(datosRostro, np.array(labels))
         tiempo_de_entrenamiento = time.time()-inicio
-        messagebox.showinfo(title='Mensaje',message='Entregando ( {metodo}): {tiempo_de_entrenamiento}')
+        mensaje = 'Entregando ( {}): {}'.format(metodo,tiempo_de_entrenamiento)
+        print('Entregando (metodo): tiempo_de_entrenamiento')
+        #messagebox.showinfo(title='Mensaje',message=mensaje)
     
         reconocer_emocion.write('modelo' + metodo + '.xml')
 
@@ -232,22 +235,22 @@ def Entrenar():
 
         label = label + 1
 
-    ObtenerElModelo('EigenFaces',datosRostro,labels)
-    ObtenerElModelo('FisherFaces',datosRostro,labels)
+    #ObtenerElModelo('EigenFaces',datosRostro,labels)
+    #ObtenerElModelo('FisherFaces',datosRostro,labels)
     ObtenerElModelo('LBPH',datosRostro,labels)
 
 
 def Reconocimiento_Emociones():
     def imagenes(emocion):
-        if emotion == 'Felicidad': 
-            image = cv2.imread('Emojis/felicidad.jpeg')
-        if emotion == 'Enojo': 
-            image = cv2.imread('Emojis/enojo.jpeg')
-        if emotion == 'Sorpresa': 
-            image = cv2.imread('Emojis/sorpresa.jpeg')
-        if emotion == 'Tristeza': 
-            image = cv2.imread('Emojis/tristeza.jpeg')
-	return image
+        if emocion == 'Felicidad': 
+            image = cv2.imread('Gifs/Feliz.gif')
+        if emocion == 'Enojo': 
+            image = cv2.imread('Gifs/Enojado.gif')
+        if emocion == 'Sorpresa': 
+            image = cv2.imread('Gifs/Sorpresa.gif')
+        if emocion == 'Tristeza': 
+            image = cv2.imread('Gifs/Triste.gif')
+        return image
 
     metodo = 'LBPH'
 
@@ -260,11 +263,19 @@ def Reconocimiento_Emociones():
 
     reconocer_emocion.read('modelo' + metodo + '.xml')
 
+    dataPath = os.getcwd() + '/Fotos'
+    imagePaths = os.listdir(dataPath)
+    print('imagePaths=',imagePaths)
+
+    cap = cv2.VideoCapture(0)
+
 
     rostro_clasificar = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
 
     while True:
+        
         ret, frame = cap.read()
+        print(frame)
         if ret == False:
             break
 
@@ -277,7 +288,7 @@ def Reconocimiento_Emociones():
         for (x,y,w,h) in rostros:
             rostro = auxFrame[y:y+h,x:x+w]
             rostro = cv2.resize(rostro,(150,150),interpolation=cv2.INTER_CUBIC)
-            rostro = reconocer_emocion.predict(rostro)
+            result = reconocer_emocion.predict(rostro)
 
             cv2.putText(frame,'{}'.format(result),(x,y-5),1,1.3,(255,255,0),1,cv2.LINE_AA)
             
@@ -285,7 +296,8 @@ def Reconocimiento_Emociones():
                 if result[1] < 100:
                     cv2.putText(frame,'{}'.format(imagePaths[result[0]]),(x,y-25),2,1.1,(0,255,0),1,cv2.LINE_AA)
                     cv2.rectangle(frame, (x,y),(x+w,y+h),(0,255,0),2)
-                    image = emotionImage(imagePaths[result[0]])
+                    image = imagenes(imagePaths[result[0]])
+                    #nFrame = cv2.h
                     nFrame = cv2.hconcat([frame,image])
                 else:
                     cv2.putText(frame,'No identificado',(x,y-20),2,0.8,(0,0,255),1,cv2.LINE_AA)
@@ -424,24 +436,24 @@ def Emociones():
 
 
 def InicioLinux():
-    inicio = Tk()
-    inicio.title('Inicio de Sesion')
-    inicio.attributes('-zoomed', True)
+    iniciolinux = Tk()
+    iniciolinux.title('Inicio de Sesion')
+    iniciolinux.attributes('-zoomed', True)
 
-    boton_entrenamiento = Button(inicio, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Entrenamiento)
+    boton_entrenamiento = Button(iniciolinux, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Entrenamiento)
     boton_entrenamiento.place(x=0, y=40)
 
-    boton_emocion = Button(inicio, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Reconocimiento_Emociones)
+    boton_emocion = Button(iniciolinux, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Reconocimiento_Emociones)
     boton_emocion.place(x=330, y=40)
 
-    """boton_mascara = Button(inicio, text='Mascarilla', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
+    """boton_mascara = Button(iniciolinux, text='Mascarilla', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
     boton_mascara.place(x=660, y=40)
 
-    boton_lapiz = Button(inicio, text='Mascarilla', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
+    boton_lapiz = Button(iniciolinux, text='Mascarilla', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
     boton_lapiz.place(x=990, y=40)"""
 
-    inicio.config(background='gray')
-    inicio.mainloop()
+    iniciolinux.config(background='gray')
+    iniciolinux.mainloop()
 
 
 def InicioWindows():
