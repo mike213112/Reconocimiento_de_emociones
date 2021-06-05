@@ -241,23 +241,24 @@ def Entrenar():
 
 
 def Reconocimiento_Emociones():
-    def imagenes(emocion):
+    '''def imagenes(emocion):
+        image = ''
         if emocion == 'Felicidad': 
-            image = cv2.imread('Gifs/Feliz.gif')
+            image = cv2.imread('Emojis/felicidad.jpeg')
         if emocion == 'Enojo': 
-            image = cv2.imread('Gifs/Enojado.gif')
+            image = cv2.imread('Emojis/enojo.jpeg')
         if emocion == 'Sorpresa': 
-            image = cv2.imread('Gifs/Sorpresa.gif')
+            image = cv2.imread('Emojis/sorpresa.jpeg')
         if emocion == 'Tristeza': 
-            image = cv2.imread('Gifs/Triste.gif')
-        return image
+            image = cv2.imread('Emojis/tristeza.jpeg')
+        return image'''
 
     metodo = 'LBPH'
 
-    if metodo == 'EigenFaces': 
+    '''if metodo == 'EigenFaces': 
         reconocer_emocion = cv2.face.EigenFaceRecognizer_create()
     if metodo == 'FisherFaces': 
-        reconocer_emocion = cv2.face.FisherFaceRecognizer_create()
+        reconocer_emocion = cv2.face.FisherFaceRecognizer_create()'''
     if metodo == 'LBPH': 
         reconocer_emocion = cv2.face.LBPHFaceRecognizer_create()
 
@@ -275,7 +276,6 @@ def Reconocimiento_Emociones():
     while True:
         
         ret, frame = cap.read()
-        print(frame)
         if ret == False:
             break
 
@@ -295,16 +295,17 @@ def Reconocimiento_Emociones():
             if metodo == 'LBPH':
                 if result[1] < 100:
                     cv2.putText(frame,'{}'.format(imagePaths[result[0]]),(x,y-25),2,1.1,(0,255,0),1,cv2.LINE_AA)
-                    cv2.rectangle(frame, (x,y),(x+w,y+h),(0,255,0),2)
-                    image = imagenes(imagePaths[result[0]])
+                    cv2.rectangle(frame, (x,y),(x+w,y+h+40),(0,255,0),2)
+                    #image = imagenes(imagePaths[result[0]])
                     #nFrame = cv2.h
-                    nFrame = cv2.hconcat([frame,image])
+                    #nFrame = cv2.hconcat([frame,image])
                 else:
                     cv2.putText(frame,'No identificado',(x,y-20),2,0.8,(0,0,255),1,cv2.LINE_AA)
-                    cv2.rectangle(frame, (x,y),(x+w,y+h),(0,0,255),2)
-                    nFrame = cv2.hconcat([frame,np.zeros((480,300,3),dtype=np.uint8)])
+                    cv2.rectangle(frame, (x,y),(x+w,y+h+40),(0,0,255),2)
+                    #nFrame = cv2.hconcat([frame,np.zeros((480,300,3),dtype=np.uint8)])
 
-        cv2.imshow('nFrame',nFrame)
+        #cv2.imshow('nFrame',nFrame)
+        cv2.imshow('Frame',frame)
         k = cv2.waitKey(1)
         if k == 27:
             break
@@ -407,16 +408,16 @@ def Entrenamiento():
         entrenamiento.destroy()
 
 
-    boton_enojo = Button(entrenamiento, text="Enojo", command=Enojo, bg='#154D04', fg='#FFFFFF', width=20, height=35)
+    boton_enojo = Button(entrenamiento, text="Enojo", command=Enojo, bg='#FC1700', fg='#FFFFFF', width=20, height=35)
     boton_enojo.place(x=0, y=0)
 
     boton_felicidad = Button(entrenamiento, text='Felicidad', command=Feliz, bg='#154D04', fg='#FFFFFF', width=20, height=35)
     boton_felicidad.place(x=180,y=0)
     
-    boton_sorpresa = Button(entrenamiento, text='Sorpresa', command=Sorprendido, bg='#154D04', fg='#FFFFFF', width=20, height=35)
+    boton_sorpresa = Button(entrenamiento, text='Sorpresa', command=Sorprendido, bg='#C7AB0C', fg='#FFFFFF', width=20, height=35)
     boton_sorpresa.place(x=360, y=0)
     
-    boton_tristeza = Button(entrenamiento, text='Tristeza', command=Triste, bg='#154D04', fg='#FFFFFF', width=20, height=35)
+    boton_tristeza = Button(entrenamiento, text='Tristeza', command=Triste, bg='#0566CC', fg='#FFFFFF', width=20, height=35)
     boton_tristeza.place(x=540, y=0)
 
     center(entrenamiento)
@@ -440,11 +441,11 @@ def InicioLinux():
     iniciolinux.title('Inicio de Sesion')
     iniciolinux.attributes('-zoomed', True)
 
-    boton_entrenamiento = Button(iniciolinux, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Entrenamiento)
-    boton_entrenamiento.place(x=0, y=40)
+    boton_entrenamiento = Button(iniciolinux, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=65, height=40, command=Entrenamiento)
+    boton_entrenamiento.place(x=0, y=0)
 
-    boton_emocion = Button(iniciolinux, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Reconocimiento_Emociones)
-    boton_emocion.place(x=330, y=40)
+    boton_emocion = Button(iniciolinux, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=65, height=40, command=Reconocimiento_Emociones)
+    boton_emocion.place(x=680, y=0)
 
     """boton_mascara = Button(iniciolinux, text='Mascarilla', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
     boton_mascara.place(x=660, y=40)
@@ -461,11 +462,11 @@ def InicioWindows():
     inicio.title('Inicio de Sesion')
     inicio.attributes('-fullscreen', True)
 
-    boton_entrenamiento = Button(inicio, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Entrenamiento)
-    boton_entrenamiento.place(x=0, y=40)
+    boton_entrenamiento = Button(inicio, text='Entrenamiento', bg='#454545', fg='white', font=('Arial', 14), width=65, height=40, command=Entrenamiento)
+    boton_entrenamiento.place(x=0, y=00)
 
-    boton_emocion = Button(inicio, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30, command=Reconocimiento_Emociones)
-    boton_emocion.place(x=330, y=40)
+    boton_emocion = Button(inicio, text='Emociones', bg='#454545', fg='white', font=('Arial', 14), width=65, height=40, command=Reconocimiento_Emociones)
+    boton_emocion.place(x=680, y=00)
 
     """boton_mascara = Button(inicio, text='Mascarilla', bg='#454545', fg='white', font=('Arial', 14), width=30, height=30)
     boton_mascara.place(x=660, y=40)
